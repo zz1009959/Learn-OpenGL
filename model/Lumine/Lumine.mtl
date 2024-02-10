@@ -1,0 +1,176 @@
+# Blender 3.3.2 MTL File: 'Tactical Lumine.blend'
+# www.blender.org
+
+newmtl Lumine_Body
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Ka Lumine_Body_Shadow_Ramp.png
+map_Kd Lumine_Body_Diffuse.png
+map_Ks Lumine_Body_Lightmap.png
+
+newmtl Lumine_Body_Outlines
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Lumine_Face
+Ns 100.000015
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 3
+map_Kd Avatar_Girl_Sword_PlayerGirl_Tex_Face_Diffuse.png
+map_Ks Avatar_Girl_Tex_Face_Lightmap.png
+
+newmtl Lumine_Hair.002
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Ka Avatar_Girl_Sword_PlayerGirl_Tex_Hair_Shadow_Ramp.png
+map_Kd Avatar_Girl_Sword_PlayerGirl_Tex_Hair_Diffuse.png
+map_Ks Avatar_Girl_Sword_PlayerGirl_Tex_Hair_Lightmap.png
+
+newmtl Lumine_Hair_Outline
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Ka Avatar_Girl_Sword_PlayerGirl_Tex_Hair_Shadow_Ramp.png
+map_Kd Avatar_Girl_Sword_PlayerGirl_Tex_Hair_Diffuse.png
+map_Ks Avatar_Girl_Sword_PlayerGirl_Tex_Hair_Lightmap.png
+
+newmtl Lumine_Outfit_v2
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd Lumine Clothes Texture.png
+map_Ks Lumine Clothes Lightmap.png
+
+
+newmtl Lumine_Outfits
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd Lumine Clothes Texture.png
+map_Ka Lumine Clothes Shadow.png
+map_Ks Lumine Clothes Light.png
+
+newmtl Lumine_Outfits.glasses.001
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Material
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Outfits_outline_BK
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Skin_Outline
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Skin_Outline.001
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+
+newmtl miHoYo_-_Genshin_Face
+Ns 100.000015
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 3
+map_Kd Avatar_Girl_Sword_PlayerGirl_Tex_Face_Diffuse.png
+map_Ks Avatar_Girl_Tex_Face_Lightmap.png
+
+newmtl miHoYo_-_Genshin_Hair.001
+Ns 360.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Ka Avatar_Girl_Sword_PlayerGirl_Tex_Hair_Shadow_Ramp.png
+map_Kd Avatar_Girl_Sword_PlayerGirl_Tex_Hair_Diffuse.png
+map_Ks Avatar_Girl_Sword_PlayerGirl_Tex_Hair_Lightmap.png
+
+newmtl 表情
+Ns 403.895782
+Ka 0.294079 0.294079 0.294079
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 3
+map_Kd 表情.png
