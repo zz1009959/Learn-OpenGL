@@ -14,6 +14,7 @@
 #include<model.h>
 
 #include<iostream>
+#include<map>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -57,7 +58,8 @@ int main()
     glfwSetCursorPosCallback(window, mouse_callback);//鼠标移动
     glfwSetScrollCallback(window, scroll_callback);//鼠标滚轮滚动
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);// 隐藏光标
+    // 光标
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
     /*在调用任何OpenGL的函数之前我们需要初始化GLAD。*/
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -66,7 +68,7 @@ int main()
         return -1;
     }
 
-    // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
+    // 翻转y轴
     //stbi_set_flip_vertically_on_load(false);
 
     //------------------------------
@@ -83,12 +85,7 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    //启用深度测试
-    glEnable(GL_DEPTH_TEST);
-    //glDepthFunc(GL_ALWAYS);
-    glDepthFunc(GL_LESS);
-
-    Shader ourShader("./src/4.1_Depth Buffer/shader/model.vert", "./src/4.1_Depth Buffer/shader/model.frag");
+    Shader ourShader("./src/4.3_Blend/shader/model.vert", "./src/4.3_Blend/shader/model.frag");
 
     float cubeVertices[] = {
         // 位置					//纹理坐标
@@ -144,6 +141,30 @@ int main()
         -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
          5.0f, -0.5f, -5.0f,  2.0f, 2.0f
     };
+    float transparentVertices[] = {
+        // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+        0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+        0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+        1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+        0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+        1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+        1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+    };
+    std::vector<glm::vec3> vegetation;
+    vegetation.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
+    vegetation.push_back(glm::vec3(1.5f, 0.0f, 0.51f));
+    vegetation.push_back(glm::vec3(0.0f, 0.0f, 0.7f));
+    vegetation.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
+    vegetation.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
+
+    // 启用深度测试
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    // 启用混合
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // 立方体 VAO
     unsigned int cubeVAO, cubeVBO;
@@ -170,10 +191,24 @@ int main()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
 
+    // 草 VAO
+    unsigned int vegetationVAO, vegetationVBO;
+    glGenVertexArrays(1, &vegetationVAO);
+    glGenBuffers(1, &vegetationVBO);
+    glBindVertexArray(vegetationVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, vegetationVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), &transparentVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
+
     // load textures
     // -------------
     unsigned int cubeTexture = loadTexture("./image/marble.jpg");
     unsigned int floorTexture = loadTexture("./image/metal.png");
+    unsigned int grassTexture = loadTexture("./image/blending_transparent_window.png");
 
     // shader configuration
     // --------------------
@@ -182,6 +217,7 @@ int main()
 
     //imgui测试值
     ImVec4 clear_color = ImVec4(0.1, 0.1, 0.1, 1.0);
+    float scale = 1.1f;
     while (!glfwWindowShouldClose(window))
     {
         //每帧时间逻辑
@@ -198,13 +234,14 @@ int main()
 
         ImGui::Begin("ImGui");
         ImGui::ColorEdit3("clear color", (float*)&clear_color);
+        ImGui::SliderFloat("scale", &scale, 1.0, 3.0);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
 
         //渲染指令
         /*当调用glClear函数，清除颜色缓冲之后，整个颜色缓冲都会被填充为glClearColor里所设置的颜色。*/
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         ourShader.use();
         glm::mat4 model = glm::mat4(1.0f);
@@ -212,7 +249,18 @@ int main()
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.setMat4("view", view);
         ourShader.setMat4("projection", projection);
-        // cubes
+
+        // 正常渲染地板，但是不把地板写到模板缓冲中，我们只关心立方体，我们把掩码设置为0x00，来  保证不写入模板缓冲中
+        ourShader.use();
+        glStencilMask(0x00);
+        // 地板
+        glBindVertexArray(planeVAO);
+        glBindTexture(GL_TEXTURE_2D, floorTexture);
+        ourShader.setMat4("model", glm::mat4(1.0f));
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+
+        // 立方体
         glBindVertexArray(cubeVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, cubeTexture);
@@ -223,12 +271,25 @@ int main()
         model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
         ourShader.setMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        // floor
-        glBindVertexArray(planeVAO);
-        glBindTexture(GL_TEXTURE_2D, floorTexture);
-        ourShader.setMat4("model", glm::mat4(1.0f));
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
+
+        // 存储并且排序透明物体
+        std::map<float, glm::vec3> sorted;
+        for (GLuint i = 0; i < vegetation.size(); i++)
+        {
+            float distance = glm::length(camera.Position - vegetation[i]);
+            sorted[distance] = vegetation[i];
+        }
+
+        // 草
+        glBindVertexArray(vegetationVAO);
+        glBindTexture(GL_TEXTURE_2D, grassTexture);
+        for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, it->second);
+            ourShader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
 
         //渲染gui
         ImGui::Render();
@@ -242,6 +303,11 @@ int main()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteVertexArrays(1, &planeVAO);
+    glDeleteBuffers(1, &cubeVBO);
+    glDeleteBuffers(1, &planeVBO);
 
     glfwTerminate();//正确释放/删除之前的分配的所有资源
     return 0;
@@ -316,8 +382,8 @@ unsigned int loadTexture(char const* path)
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

@@ -83,12 +83,8 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    //启用深度测试
-    glEnable(GL_DEPTH_TEST);
-    //glDepthFunc(GL_ALWAYS);
-    glDepthFunc(GL_LESS);
-
-    Shader ourShader("./src/4.1_Depth Buffer/shader/model.vert", "./src/4.1_Depth Buffer/shader/model.frag");
+    Shader ourShader("./src/4.5_FrameBuffer/shader/model.vert", "./src/4.5_FrameBuffer/shader/model.frag");
+    Shader quadShader("./src/4.5_FrameBuffer/shader/fbo.vert", "./src/4.5_FrameBuffer/shader/fbo.frag");
 
     float cubeVertices[] = {
         // 位置					//纹理坐标
@@ -144,6 +140,28 @@ int main()
         -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
          5.0f, -0.5f, -5.0f,  2.0f, 2.0f
     };
+    float quadVertices[] = {
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };
+
+    // 帧缓冲对象
+    GLuint fbo;
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    // 渲染缓冲对象
+    GLuint rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     // 立方体 VAO
     unsigned int cubeVAO, cubeVBO;
@@ -170,18 +188,50 @@ int main()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
 
-    // load textures
-    // -------------
+    // 四边形 VAO
+    unsigned int quadVAO, quadVBO;
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glBindVertexArray(0);
+
+    // 生成纹理
+    GLuint texColorBuffer;
+    glGenTextures(1, &texColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // 将纹理附件附加到当前绑定的帧缓冲对象
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+
+    // 将渲染缓冲对象附加到帧缓冲的深度和模板附件上
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+    // 检查帧缓冲是否是完整的，如果不是，我们将打印错误信息。
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // 加载纹理
     unsigned int cubeTexture = loadTexture("./image/marble.jpg");
     unsigned int floorTexture = loadTexture("./image/metal.png");
 
-    // shader configuration
-    // --------------------
+    // 设置纹理
     ourShader.use();
     ourShader.setInt("texture1", 0);
 
     //imgui测试值
     ImVec4 clear_color = ImVec4(0.1, 0.1, 0.1, 1.0);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  //线框模式渲染
     while (!glfwWindowShouldClose(window))
     {
         //每帧时间逻辑
@@ -201,10 +251,14 @@ int main()
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
 
-        //渲染指令
-        /*当调用glClear函数，清除颜色缓冲之后，整个颜色缓冲都会被填充为glClearColor里所设置的颜色。*/
+        // 渲染指令
+        // ---------------
+
+        // 第一阶段
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
         ourShader.use();
         glm::mat4 model = glm::mat4(1.0f);
@@ -229,6 +283,18 @@ int main()
         ourShader.setMat4("model", glm::mat4(1.0f));
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
+
+        // 第二阶段
+        // ----------------
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); // 返回默认
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        quadShader.use();
+        glBindVertexArray(quadVAO);
+        glDisable(GL_DEPTH_TEST);
+        glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         //渲染gui
         ImGui::Render();
